@@ -16,7 +16,7 @@ mapboxgl.datascope(map, {
 })
 ```
 
-See also [example.html](https://anandthakker.github.com/mapbox-gl-datadriven/example.html).
+See also [example.html](https://anandthakker.github.com/mapbox-gl-datascope/example.html).
 
 ## API
 
