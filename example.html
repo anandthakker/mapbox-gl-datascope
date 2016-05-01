@@ -14,6 +14,8 @@
     <style>
         body { margin:0; padding:0; }
         #map { position:absolute; top:0; bottom:0; width:100%; }
+        .mapboxgl-popup,
+        .mapboxgl-popup * { pointer-events: none; }
     </style>
 </head>
 <body>
@@ -35,8 +37,8 @@ var layers = mapboxgl.datadriven(map, {
   },
   'source-layer': 'osm',
   paint: {
-    'fill-color': '#ff8800',
-    'fill-outline-color': '#ff8800'
+    'fill-color': '#00aa88',
+    'fill-outline-color': '#00aa88'
   },
   styleProperty: 'fill-opacity',
   styleFunction: {
@@ -53,8 +55,8 @@ var layers = mapboxgl.datadriven(map, {
 
 mapboxgl.datascope(map, {
   layers: layers,
-  popup: new mapboxgl.Popup({ closeButton: false }).addTo(map),
-  properties: { 'road_density': 'Road Density (km/km2)' }
+  properties: { 'road_density': 'Road Density (km/km2)' },
+  popup: new mapboxgl.Popup({ closeButton: false }).addTo(map)
 })
 
 </script>
