@@ -14,7 +14,7 @@ module.exports = datascope
  * @param {Map} map Mapbox GL map instance
  * @param {object} options
  * @param {Array<string>} options.layers List of layers to query for data.
- * @param {object} options.properties Object mapping feature property keys to a string label, or just `true` to use the key itself.  Only these properties will be shown.
+ * @param {object} options.properties Object mapping feature property keys to { name, format } where `format` is an optional format function for the property value.  Only these properties will be shown.
  * @param {object} [options.summaries] Object mapping property keys to aggregation function name from [geojson-polygon-aggregate](https://github.com/developmentseed/geojson-polygon-aggregate) or 'reducer' function `(accumulator, clippedFeature) -> accumulator`
  * @param {Popup} [options.popup] A mapbox-gl-js Popup control; if supplied, the popup will be populated with the rendered property data.
  * @param {string} [options.event='mousemove'] Mouse event to use (mousemove, click)
@@ -145,17 +145,22 @@ function datascope (map, options) {
 }
 
 function formatProperties (format, properties) {
-  return Object.keys(format || properties)
-  .filter((k) => (properties && typeof properties[k] !== 'undefined'))
+  return Object.keys(properties)
+  .filter((k) => (defined(properties, k) && defined(format, k)))
   .map((k) => [
-    typeof format[k] === 'string' ? format[k] : k,
-    properties[k]
+    format[k].name,
+    format[k].format ? format[k].format(properties[k]) : properties[k]
   ])
 }
 
 function isDrawnFeature (feature) {
   return feature.layer && feature.layer.id.startsWith('gl-draw')
 }
+
+function defined (obj, k) {
+  return obj && typeof obj[k] !== 'undefined'
+}
+
 
 },{"geojson-polygon-aggregate":12,"lodash.throttle":22,"mapbox-gl-draw":23,"turf-extent":73,"yo-yo":90}],2:[function(require,module,exports){
 'use strict'
