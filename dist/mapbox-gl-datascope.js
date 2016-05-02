@@ -15,6 +15,7 @@ module.exports = datascope
  * @param {object} options
  * @param {Array<string>} options.layers List of layers to query for data.
  * @param {object} options.properties Object mapping feature property keys to a string label, or just `true` to use the key itself.  Only these properties will be shown.
+ * @param {object} [options.summaries] Object mapping property keys to aggregation function name from [geojson-polygon-aggregate](https://github.com/developmentseed/geojson-polygon-aggregate) or 'reducer' function `(accumulator, clippedFeature) -> accumulator`
  * @param {Popup} [options.popup] A mapbox-gl-js Popup control; if supplied, the popup will be populated with the rendered property data.
  * @param {string} [options.event='mousemove'] Mouse event to use (mousemove, click)
  * @param {number} [options.radius=0] Feature query radius
