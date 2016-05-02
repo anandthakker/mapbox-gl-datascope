@@ -34,7 +34,7 @@ function datascope (map, options) {
   }, options)
 
   var container = yo`<div class="mapboxgl-datascope"></div>`
-  map.on(options.event, showDataAtPoint)
+  map.on(options.event, throttle(showDataAtPoint, 30))
 
   var draw
   var summaryData = {}
