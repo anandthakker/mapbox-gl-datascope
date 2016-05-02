@@ -1,7 +1,7 @@
 {
   "name": "mapbox-gl-datascope",
   "version": "1.2.0",
-  "description": "A stopgap to mimic data-driven styles in mapbox-gl-js; hopefully obsolete very soon!",
+  "description": "Scope your vector tile data in Mapbox GL JS.",
   "keywords": [
     "mapbox",
     "mapbox-gl",
