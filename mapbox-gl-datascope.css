@@ -1,0 +1,4 @@
+.mapboxgl-datascope,
+.mapboxgl-datascope * { pointer-events: none; }
+.mapboxgl-datascope td { padding: 0 5px; }
+.mapboxgl-datascope td:first-child { font-weight: bold; }

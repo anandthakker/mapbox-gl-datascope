@@ -4,10 +4,10 @@
     <meta charset='utf-8' />
     <title></title>
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
-    <script src='//api.tiles.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.js'></script>
-    <link href='//api.tiles.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.css' rel='stylesheet' />
-    <script src='//api.tiles.mapbox.com/mapbox.js/plugins/turf/v2.0.0/turf.min.js'></script>
-    <script src='//anandthakker.github.io/mapbox-gl-datadriven/dist/mapbox-gl-datadriven.js'></script>
+    <script src='vendor/mapbox-gl.js'></script>
+    <link href='vendor/mapbox-gl.css' rel='stylesheet' />
+    <script src='vendor/turf.min.js'></script>
+    <script src='vendor/mapbox-gl-datadriven.js'></script>
 
     <script src='dist/mapbox-gl-datascope.js'></script>
     <link href='dist/mapbox-gl-datascope.css' rel='stylesheet' />
@@ -26,7 +26,7 @@
 mapboxgl.accessToken = 'pk.eyJ1IjoiZGV2c2VlZCIsImEiOiJjaW4wOW1taTkwN3c5d2tsdXg3aXRrMjZhIn0.QpBLQwr3XzYs6xh6b8hbcQ';
 var map = new mapboxgl.Map({
     container: 'map', // container id
-    style: 'mapbox://styles/mapbox/streets-v8', //stylesheet location
+    style: 'local-style.json', //stylesheet location
     center: [-77.0560, 38.8862], // starting position
     zoom: 11 // starting zoom
 });
@@ -34,7 +34,7 @@ var map = new mapboxgl.Map({
 var layers = mapboxgl.datadriven(map, {
   source: {
     type: 'vector',
-    url: 'mapbox://devseed.0z6wkh02'
+    url: 'http://localhost:8080/index.json'
   },
   'source-layer': 'osm',
   paint: {

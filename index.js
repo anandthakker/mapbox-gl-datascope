@@ -1,6 +1,10 @@
 'use strict'
 
 var yo = require('yo-yo')
+var Draw = require('mapbox-gl-draw')
+var extent = require('turf-extent')
+var aggregate = require('geojson-polygon-aggregate')
+var throttle = require('lodash.throttle')
 
 module.exports = datascope
 
@@ -24,18 +28,91 @@ function datascope (map, options) {
     filter: [],
     radius: 0,
     properties: null,
+    summaries: null,
     popup: null
   }, options)
 
   var container = yo`<div class="mapboxgl-datascope"></div>`
   map.on(options.event, showDataAtPoint)
+
+  var draw
+  var summaryData = {}
+  var selectedAreas = []
+  var updateSummaries = throttle(_updateSummaries, 50)
+  if (options.summaries) {
+    draw = Draw({ controls: { line_string: false, point: false } })
+    map.addControl(draw)
+
+    for (var k in options.summaries) {
+      var fn = options.summaries[k]
+      if (typeof fn === 'string') {
+        options.summaries[k] = aggregate.reducers[fn](k)
+      }
+    }
+
+    // selection management
+    map.on('draw.modechange', function (e) {
+      if (e.mode === 'simple_select') {
+        updateSelectedAreas(e.opts)
+      }
+    })
+
+    map.on('draw.simple_select.selected.start', function (e) {
+      // this is weird because gl-draw is putting selected ids directly onto
+      // the payload object instead of into an array
+      var added = Object.keys(e).filter((i) => !isNaN(i)).map((i) => e[i])
+        .filter((id) => selectedAreas.indexOf(id) < 0) // filter out already selected
+      updateSelectedAreas(selectedAreas.concat(added))
+    })
+
+    map.on('draw.simple_select.selected.end', function (e) {
+      // this is weird because gl-draw is putting selected ids directly onto
+      // the payload object instead of into an array
+      var removed = Object.keys(e).filter((i) => !isNaN(i)).map((i) => e[i])
+      updateSelectedAreas(selectedAreas.filter((id) => removed.indexOf(id) < 0))
+    })
+
+    map.on('draw.changed', function (e) {
+      updateSummaries()
+    })
+  }
+
   return container
+
+  function updateSelectedAreas (ids) {
+    selectedAreas = ids || []
+    if (!selectedAreas.length) { return }
+    updateSummaries()
+  }
+
+  function _updateSummaries () {
+    if (!selectedAreas.length) { return }
+    var groups = selectedAreas.map((id) => Object.assign(draw.get(id), {
+      properties: { id: id }
+    }))
+    var bbox = extent({type: 'FeatureCollection', features: groups})
+    bbox = [[bbox[0], bbox[1]], [bbox[2], bbox[3]]].map(map.project.bind(map))
+    var features = map.queryRenderedFeatures(bbox, { layers: options.layers })
+    var stats = aggregate.groups(groups, features, options.summaries)
+    stats.features.forEach(function (feat) {
+      summaryData[feat.properties.id] = feat.properties
+    })
+  }
 
   function showDataAtPoint (e) {
     var features = map.queryRenderedFeatures(e.point, {
       radius: options.radius,
-      layers: options.layers
+      layers: options.layers.concat([
+        'gl-draw-active-polygon.hot',
+        'gl-draw-active-polygon.cold',
+        'gl-draw-polygon.hot',
+        'gl-draw-polygon.cold'
+      ])
     })
+
+    // prefer drawn features
+    var drawFeatures = features.filter(isDrawnFeature)
+    features = drawFeatures.length ? drawFeatures : features
 
     map.getCanvas().style.cursor = (features.length) ? 'pointer' : ''
     if (!features.length) {
@@ -43,13 +120,9 @@ function datascope (map, options) {
       return
     }
 
-    yo.update(container, yo`
-     <div class="mapboxgl-datascope">
-      ${formatProperties(options.properties, features[0]).map((row) => (yo`
-        <tr><td>${row[0]}</td><td>${row[1]}</tr>
-      `))}
-     </div>
-    `)
+    var properties = drawFeatures.length
+      ? summaryData[features[0].properties.id] : features[0].properties
+    update({ tableData: formatProperties(options.properties, properties) })
 
     if (options.popup) {
       options.popup.setDOMContent(container)
@@ -57,12 +130,27 @@ function datascope (map, options) {
       options.popup.addTo(map)
     }
   }
+
+  function update (state) {
+    yo.update(container, yo`
+     <div class="mapboxgl-datascope">
+      ${state.tableData.map((row) => (yo`
+        <tr><td>${row[0]}</td><td>${row[1]}</tr>
+      `))}
+     </div>
+    `)
+  }
 }
 
-function formatProperties (format, feature) {
-  return Object.keys(format || feature.properties)
+function formatProperties (format, properties) {
+  return Object.keys(format || properties)
+  .filter((k) => (properties && typeof properties[k] !== 'undefined'))
   .map((k) => [
     typeof format[k] === 'string' ? format[k] : k,
-    feature.properties[k]
+    properties[k]
   ])
+}
+
+function isDrawnFeature (feature) {
+  return feature.layer && feature.layer.id.startsWith('gl-draw')
 }
