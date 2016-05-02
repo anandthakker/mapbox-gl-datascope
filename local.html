@@ -57,8 +57,14 @@ var layers = mapboxgl.datadriven(map, {
 mapboxgl.datascope(map, {
   layers: layers,
   properties: {
-    road_density: 'Road Density (km/km2)',
-    road_length: 'Total Road Length (km)'
+    road_density: {
+      name: 'Road Density (km/km2)',
+      format: (x) => x.toFixed(1)
+    },
+    road_length: {
+      name: 'Total Road Length (km)',
+      format: (x) => x.toFixed(0)
+    }
   },
   summaries: {
     road_density: 'areaWeightedMean',
