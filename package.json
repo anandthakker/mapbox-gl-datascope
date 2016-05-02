@@ -1,6 +1,6 @@
 {
   "name": "mapbox-gl-datascope",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Scope your vector tile data in Mapbox GL JS.",
   "keywords": [
     "mapbox",
