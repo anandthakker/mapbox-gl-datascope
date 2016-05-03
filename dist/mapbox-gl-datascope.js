@@ -35,12 +35,17 @@ function datascope (map, options) {
   }, options)
 
   var container = yo`<div class="mapboxgl-datascope"></div>`
-  map.on(options.event, showDataAtPoint)
+
+  var showDataAtPoint = throttle(_showDataAtPoint, 100)
+  map.on(options.event, function (e) {
+    if (options.popup) { options.popup.setLngLat(e.lngLat) }
+    showDataAtPoint(e)
+  })
 
   var draw
   var summaryData = {}
   var selectedAreas = []
-  var updateSummaries = throttle(_updateSummaries, 50)
+  var updateSummaries = throttle(_updateSummaries, 100)
   if (options.summaries) {
     draw = Draw({ controls: { line_string: false, point: false } })
     map.addControl(draw)
@@ -74,9 +79,7 @@ function datascope (map, options) {
       updateSelectedAreas(selectedAreas.filter((id) => removed.indexOf(id) < 0))
     })
 
-    map.on('draw.changed', function (e) {
-      updateSummaries()
-    })
+    map.on('draw.changed', function (e) { updateSummaries() })
   }
 
   return container
@@ -101,7 +104,7 @@ function datascope (map, options) {
     })
   }
 
-  function showDataAtPoint (e) {
+  function _showDataAtPoint (e) {
     var features = map.queryRenderedFeatures(e.point, {
       radius: options.radius,
       layers: options.layers.concat([
@@ -128,7 +131,6 @@ function datascope (map, options) {
 
     if (options.popup) {
       options.popup.setDOMContent(container)
-      options.popup.setLngLat(e.lngLat)
       options.popup.addTo(map)
     }
   }
@@ -145,11 +147,12 @@ function datascope (map, options) {
 }
 
 function formatProperties (format, properties) {
+  if (!properties) { return [] }
   return Object.keys(properties)
-  .filter((k) => (defined(properties, k) && defined(format, k)))
+  .filter((k) => (!format || defined(format, k)))
   .map((k) => [
-    format[k].name,
-    format[k].format ? format[k].format(properties[k]) : properties[k]
+    format ? format[k].name : k,
+    (format && format[k].format) ? format[k].format(properties[k]) : properties[k]
   ])
 }
 
