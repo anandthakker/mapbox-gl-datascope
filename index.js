@@ -144,11 +144,12 @@ function datascope (map, options) {
 }
 
 function formatProperties (format, properties) {
+  if (!properties) { return [] }
   return Object.keys(properties)
-  .filter((k) => (defined(properties, k) && defined(format, k)))
+  .filter((k) => (!format || defined(format, k)))
   .map((k) => [
-    format[k].name,
-    format[k].format ? format[k].format(properties[k]) : properties[k]
+    format ? format[k].name : k,
+    (format && format[k].format) ? format[k].format(properties[k]) : properties[k]
   ])
 }
 
