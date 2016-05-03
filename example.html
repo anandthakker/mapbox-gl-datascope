@@ -34,7 +34,7 @@ var map = new mapboxgl.Map({
 var layers = mapboxgl.datadriven(map, {
   source: {
     type: 'vector',
-    url: 'mapbox://devseed.0z6wkh02'
+    url: 'mapbox://devseed.us-roads-4096'
   },
   'source-layer': 'osm',
   paint: {
@@ -49,7 +49,7 @@ var layers = mapboxgl.datadriven(map, {
       [2, 0.25],
       [4, 0.5],
       [8, 0.75],
-      [16, 1]
+      [16, 0.9]
     ]
   }
 })
